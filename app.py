@@ -49,95 +49,110 @@ st.markdown(
     """
     <style>
         .stApp {
-            background-image: linear-gradient(rgba(15, 71, 35, 0.68), rgba(15, 71, 35, 0.75)),
-                url("https://images.unsplash.com/photo-1464226184884-fa52ac9d1d74?auto=format&fit=crop&w=1800&q=80");
+            background-image: linear-gradient(rgba(14, 52, 28, 0.38), rgba(14, 52, 28, 0.48)),
+                url("https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1800&q=80");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            color: #f2fff4;
-        }
-
-        .stApp > div, h1, h2, h3, h4, h5, h6, p, div, label {
-            color: #f2fff4;
+            color: #173d24;
         }
 
         .block-container {
             padding-top: 2rem;
             padding-bottom: 3rem;
+            max-width: 1200px;
         }
 
         [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, rgba(6, 55, 28, 0.94), rgba(10, 74, 38, 0.9));
-            border-right: 1px solid rgba(180, 236, 186, 0.22);
-            backdrop-filter: blur(6px);
+            background: linear-gradient(180deg, rgba(10, 72, 36, 0.96), rgba(18, 93, 48, 0.92));
+            border-right: 1px solid rgba(229, 246, 231, 0.25);
+            box-shadow: 2px 0 18px rgba(12, 46, 23, 0.18);
         }
 
         [data-testid="stSidebar"] .stSelectbox label,
         [data-testid="stSidebar"] .stSelectbox div,
-        [data-testid="stSidebar"] .stSelectbox .css-1d391kg,
         [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] {
-            color: #f2fff4 !important;
-            background: rgba(255, 255, 255, 0.05);
+            color: #f4fff7 !important;
         }
 
         .stSelectbox > div > div,
         .stTextInput > div > div,
         .stNumberInput > div > div {
-            background: rgba(234, 255, 238, 0.9) !important;
-            border: 1px solid rgba(36, 120, 58, 0.55) !important;
-            border-radius: 0.85rem !important;
-            box-shadow: none !important;
+            background: rgba(255, 255, 255, 0.94) !important;
+            border: 1px solid rgba(28, 105, 55, 0.28) !important;
+            border-radius: 0.9rem !important;
+            box-shadow: 0 2px 10px rgba(12, 46, 23, 0.06) !important;
         }
 
         .stSelectbox label,
         .stTextInput label,
         .stNumberInput label {
-            color: #f2fff4 !important;
+            color: #f4fff7 !important;
+            font-size: 0.93rem;
             font-weight: 600;
+            margin-bottom: 0.45rem;
         }
 
         .stSelectbox select,
         .stTextInput input,
         .stNumberInput input {
-            background: rgba(234, 255, 238, 0.9) !important;
-            color: #173d24 !important;
+            background: rgba(255, 255, 255, 0.96) !important;
+            color: #193b27 !important;
             border: none !important;
-            border-radius: 0.85rem !important;
+            border-radius: 0.9rem !important;
+            font-weight: 500;
         }
 
         .stButton > button,
         .stFormSubmitButton > button {
-            background: linear-gradient(135deg, #2b8d43 0%, #7edc7a 100%);
-            color: #0c2f18;
-            border: 1px solid rgba(24, 97, 45, 0.35);
+            background: linear-gradient(135deg, #2e8a4a 0%, #6ecf6d 100%);
+            color: #f4fff7;
+            border: none;
             border-radius: 0.8rem;
             font-weight: 700;
-            padding: 0.6rem 1.3rem;
-            box-shadow: 0 8px 22px rgba(19, 94, 46, 0.26);
+            padding: 0.62rem 1.3rem;
+            box-shadow: 0 10px 18px rgba(34, 111, 54, 0.2);
+            transition: all 0.2s ease;
         }
 
         .stButton > button:hover,
         .stFormSubmitButton > button:hover {
-            background: linear-gradient(135deg, #46a759 0%, #99eb90 100%);
+            background: linear-gradient(135deg, #3a9e56 0%, #7be47a 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 12px 22px rgba(34, 111, 54, 0.25);
+        }
+
+        h1, h2, h3, h4, h5, h6, p, div, span, label {
+            color: #f4fff7;
+        }
+
+        .stTitle {
+            color: #f4fff7 !important;
+        }
+
+        .stCaption {
+            color: rgba(244, 255, 247, 0.9) !important;
         }
 
         .stDataFrame, .stDataFrameContainer {
-            background: rgba(9, 35, 18, 0.45);
-            border: 1px solid rgba(191, 235, 196, 0.2);
-            border-radius: 0.8rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 1rem;
+            backdrop-filter: blur(6px);
         }
 
         .stSuccess, .stInfo, .stWarning {
-            background: rgba(15, 75, 38, 0.8);
-            border: 1px solid rgba(169, 236, 174, 0.35);
-            color: #f4fff5;
+            background: rgba(27, 89, 47, 0.78);
+            color: #f4fff7;
+            border: 1px solid rgba(201, 241, 206, 0.22);
         }
 
         .metric-container {
-            background: rgba(13, 58, 28, 0.58);
-            border: 1px solid rgba(164, 233, 167, 0.35);
-            border-radius: 0.8rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 1rem;
             padding: 0.8rem;
+            backdrop-filter: blur(6px);
         }
     </style>
     """,

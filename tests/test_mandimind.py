@@ -8,6 +8,11 @@ def test_sample_filtering(monkeypatch):
     assert len(rows) == 14
     assert source == "sample data" and note is None
 
+def test_commodity_list_for_state(monkeypatch):
+    monkeypatch.setenv("USE_SAMPLE_DATA", "true")
+    commodities = AgmarknetClient().commodities_for_state("Maharashtra")
+    assert commodities == ["Onion", "Potato", "Tomato"]
+
 def test_market_ranking(monkeypatch):
     monkeypatch.setenv("USE_SAMPLE_DATA", "true")
     assert compare_nearby_markets.invoke({"commodity": "Onion", "state": "Maharashtra"})["markets"][0]["market"] == "Lasalgaon"

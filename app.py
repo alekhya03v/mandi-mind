@@ -1,6 +1,7 @@
 """Streamlit entry point for the MandiMind PoC."""
 import streamlit as st
 from agent.agent import MandiMindAgent
+from data.agmarknet_client import AgmarknetClient
 
 TRANSLATIONS = {
     "English": {
@@ -53,9 +54,10 @@ st.caption(text["caption"])
 st.write(text["intro"])
 with st.form("advice_form"):
     left, middle, right = st.columns(3)
-    commodity = left.selectbox(text["commodity"], ["Onion", "Potato", "Tomato"])
-    quantity = middle.number_input(text["quantity"], min_value=1.0, value=50.0, step=1.0)
     state = right.text_input(text["state"], value="Maharashtra")
+    commodity_options = AgmarknetClient().commodities_for_state(state)
+    commodity = left.selectbox(text["commodity"], commodity_options)
+    quantity = middle.number_input(text["quantity"], min_value=1.0, value=50.0, step=1.0)
     district = left.text_input(text["district"], value="Nashik")
     submitted = st.form_submit_button(text["submit"], type="primary")
 if submitted:

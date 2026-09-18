@@ -81,6 +81,48 @@ class AgmarknetClient:
             rows = self._filter(self._sample(), commodity, state, district, market)
             return rows, "sample data fallback", f"Live API was unavailable, so sample data was used: {error}"
 
+    def _live_commodities_for_state(self, state: str) -> list[str]:
+        if not self.api_key:
+            raise RuntimeError("DATA_GOV_API_KEY is not configured.")
+        params = {"api-key": self.api_key, "format": "json", "limit": 200,
+                  "filters[state.keyword]": state.strip().title()}
+        response = requests.get(
+            API_URL,
+            params=params,
+            headers={
+                "Accept": "application/json",
+                "Accept-Encoding": "identity",
+                "Connection": "close",
+                "User-Agent": "MandiMind/1.0",
+            },
+            timeout=25,
+        )
+        response.raise_for_status()
+        records = response.json().get("records", [])
+        if not isinstance(records, list):
+            raise RuntimeError("Agmarknet returned an unexpected response.")
+        return sorted({str(row.get("commodity", "")).strip() for row in records if str(row.get("commodity", "")).strip()})
+
+    def commodities_for_state(self, state: str) -> list[str]:
+        if self.use_sample_data:
+            rows = self._sample()
+            commodities = sorted({
+                str(row["commodity"]).strip()
+                for row in rows
+                if row.get("state", "").casefold() == state.strip().casefold() and row.get("commodity")
+            })
+            return commodities or ["Onion", "Potato", "Tomato"]
+        try:
+            return self._live_commodities_for_state(state) or ["Onion", "Potato", "Tomato"]
+        except (requests.RequestException, RuntimeError, ValueError):
+            rows = self._sample()
+            commodities = sorted({
+                str(row["commodity"]).strip()
+                for row in rows
+                if row.get("state", "").casefold() == state.strip().casefold() and row.get("commodity")
+            })
+            return commodities or ["Onion", "Potato", "Tomato"]
+
 def latest_by_market(rows):
     latest = {}
     for row in sorted(rows, key=lambda item: item["arrival_date"], reverse=True):

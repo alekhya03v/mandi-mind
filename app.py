@@ -67,40 +67,12 @@ st.markdown(
             background: linear-gradient(180deg, rgba(10, 72, 36, 0.96), rgba(18, 93, 48, 0.92));
             border-right: 1px solid rgba(229, 246, 231, 0.25);
             box-shadow: 2px 0 18px rgba(12, 46, 23, 0.18);
+            overflow: visible;
         }
 
-        [data-testid="stSidebar"] .stSelectbox label,
-        [data-testid="stSidebar"] .stSelectbox div,
-        [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] {
+        [data-testid="stSidebar"] label,
+        [data-testid="stSidebar"] .stSelectbox {
             color: #f4fff7 !important;
-        }
-
-        .stSelectbox > div > div,
-        .stTextInput > div > div,
-        .stNumberInput > div > div {
-            background: rgba(255, 255, 255, 0.94) !important;
-            border: 1px solid rgba(28, 105, 55, 0.28) !important;
-            border-radius: 0.9rem !important;
-            box-shadow: 0 2px 10px rgba(12, 46, 23, 0.06) !important;
-        }
-
-        .stSelectbox label,
-        .stTextInput label,
-        .stNumberInput label {
-            color: #f4fff7 !important;
-            font-size: 0.93rem;
-            font-weight: 600;
-            margin-bottom: 0.45rem;
-        }
-
-        .stSelectbox select,
-        .stTextInput input,
-        .stNumberInput input {
-            background: rgba(255, 255, 255, 0.96) !important;
-            color: #193b27 !important;
-            border: none !important;
-            border-radius: 0.9rem !important;
-            font-weight: 500;
         }
 
         .stButton > button,

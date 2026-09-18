@@ -44,9 +44,9 @@ class MandiMindAgent:
         ranked = comparison["markets"]
         alternate = next((row for row in ranked if not local or row["market"] != local["market"]), None)
         local_trend = self._call_tool(trace, get_price_trend,
-            {"commodity": commodity, "market": local["market"], "days": 7}) if local else None
+            {"commodity": commodity, "state": state, "market": local["market"], "days": 7}) if local else None
         alternate_trend = self._call_tool(trace, get_price_trend,
-            {"commodity": commodity, "market": alternate["market"], "days": 7}) if alternate else None
+            {"commodity": commodity, "state": state, "market": alternate["market"], "days": 7}) if alternate else None
         percent, extra = 0.0, 0.0
         if local and alternate and local["modal_price"]:
             percent = round(((alternate["modal_price"] - local["modal_price"]) / local["modal_price"]) * 100, 2)

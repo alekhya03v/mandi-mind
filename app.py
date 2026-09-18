@@ -49,82 +49,70 @@ st.markdown(
     """
     <style>
         .stApp {
-            background-image: linear-gradient(rgba(14, 52, 28, 0.38), rgba(14, 52, 28, 0.48)),
-                url("https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1800&q=80");
+            background-image: linear-gradient(rgba(12, 58, 25, 0.72), rgba(12, 58, 25, 0.82)),
+                url("https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1600&q=80");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            color: #173d24;
+            color: #f3fff0;
+        }
+
+        .stApp > div {
+            color: #f3fff0;
+        }
+
+        h1, h2, h3, h4, h5, h6, p, div, label, .stSelectbox, .stTextInput, .stNumberInput {
+            color: #f3fff0;
+        }
+
+        [data-testid="stSidebar"] {
+            background: rgba(15, 52, 27, 0.82);
+            border-right: 1px solid rgba(176, 232, 176, 0.4);
+            backdrop-filter: blur(5px);
+        }
+
+        [data-testid="stSidebar"] .stSelectbox label,
+        [data-testid="stSidebar"] .stSelectbox div {
+            color: #f3fff0;
         }
 
         .block-container {
             padding-top: 2rem;
             padding-bottom: 3rem;
-            max-width: 1200px;
-        }
-
-        [data-testid="stSidebar"] {
-            background: linear-gradient(180deg, rgba(10, 72, 36, 0.96), rgba(18, 93, 48, 0.92));
-            border-right: 1px solid rgba(229, 246, 231, 0.25);
-            box-shadow: 2px 0 18px rgba(12, 46, 23, 0.18);
-            overflow: visible;
-        }
-
-        [data-testid="stSidebar"] label,
-        [data-testid="stSidebar"] .stSelectbox {
-            color: #f4fff7 !important;
         }
 
         .stButton > button,
         .stFormSubmitButton > button {
-            background: linear-gradient(135deg, #2e8a4a 0%, #6ecf6d 100%);
-            color: #f4fff7;
+            background: linear-gradient(135deg, #2d8a44 0%, #7ccf70 100%);
+            color: white;
             border: none;
             border-radius: 0.8rem;
-            font-weight: 700;
-            padding: 0.62rem 1.3rem;
-            box-shadow: 0 10px 18px rgba(34, 111, 54, 0.2);
-            transition: all 0.2s ease;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            box-shadow: 0 6px 18px rgba(25, 98, 48, 0.35);
         }
 
         .stButton > button:hover,
         .stFormSubmitButton > button:hover {
-            background: linear-gradient(135deg, #3a9e56 0%, #7be47a 100%);
-            transform: translateY(-1px);
-            box-shadow: 0 12px 22px rgba(34, 111, 54, 0.25);
-        }
-
-        h1, h2, h3, h4, h5, h6, p, div, span, label {
-            color: #f4fff7;
-        }
-
-        .stTitle {
-            color: #f4fff7 !important;
-        }
-
-        .stCaption {
-            color: rgba(244, 255, 247, 0.9) !important;
+            background: linear-gradient(135deg, #2d8a44 0%, #8edb7d 100%);
         }
 
         .stDataFrame, .stDataFrameContainer {
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 1rem;
-            backdrop-filter: blur(6px);
+            background: rgba(9, 33, 18, 0.42);
+            border-radius: 0.8rem;
         }
 
         .stSuccess, .stInfo, .stWarning {
-            background: rgba(27, 89, 47, 0.78);
-            color: #f4fff7;
-            border: 1px solid rgba(201, 241, 206, 0.22);
+            background: rgba(16, 64, 32, 0.85);
+            border: 1px solid rgba(162, 233, 164, 0.4);
+            color: #f3fff0;
         }
 
         .metric-container {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 1rem;
+            background: rgba(12, 52, 26, 0.58);
+            border: 1px solid rgba(157, 219, 160, 0.4);
+            border-radius: 0.8rem;
             padding: 0.8rem;
-            backdrop-filter: blur(6px);
         }
     </style>
     """,

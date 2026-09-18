@@ -50,9 +50,10 @@ class AgmarknetClient:
         if not self.api_key:
             raise RuntimeError("DATA_GOV_API_KEY is not configured.")
         params = {"api-key": self.api_key, "format": "json", "limit": 100,
-                  "filters[state.keyword]": state, "filters[commodity]": commodity}
+              "filters[state.keyword]": state.strip().title(),
+              "filters[commodity]": commodity.strip().title()}
         if district:
-            params["filters[district]"] = district
+            params["filters[district]"] = district.strip().title()
         response = requests.get(API_URL, params=params, timeout=12)
         response.raise_for_status()
         records = response.json().get("records", [])

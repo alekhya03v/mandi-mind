@@ -44,6 +44,81 @@ TRANSLATIONS = {
 LANGUAGE_NAMES = list(TRANSLATIONS)
 
 st.set_page_config(page_title="MandiMind", page_icon="🌾", layout="wide")
+
+st.markdown(
+    """
+    <style>
+        .stApp {
+            background-image: linear-gradient(rgba(12, 58, 25, 0.72), rgba(12, 58, 25, 0.82)),
+                url("https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1600&q=80");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: #f3fff0;
+        }
+
+        .stApp > div {
+            color: #f3fff0;
+        }
+
+        h1, h2, h3, h4, h5, h6, p, div, label, .stSelectbox, .stTextInput, .stNumberInput {
+            color: #f3fff0;
+        }
+
+        [data-testid="stSidebar"] {
+            background: rgba(15, 52, 27, 0.82);
+            border-right: 1px solid rgba(176, 232, 176, 0.4);
+            backdrop-filter: blur(5px);
+        }
+
+        [data-testid="stSidebar"] .stSelectbox label,
+        [data-testid="stSidebar"] .stSelectbox div {
+            color: #f3fff0;
+        }
+
+        .block-container {
+            padding-top: 2rem;
+            padding-bottom: 3rem;
+        }
+
+        .stButton > button,
+        .stFormSubmitButton > button {
+            background: linear-gradient(135deg, #2d8a44 0%, #7ccf70 100%);
+            color: white;
+            border: none;
+            border-radius: 0.8rem;
+            font-weight: 600;
+            padding: 0.6rem 1.2rem;
+            box-shadow: 0 6px 18px rgba(25, 98, 48, 0.35);
+        }
+
+        .stButton > button:hover,
+        .stFormSubmitButton > button:hover {
+            background: linear-gradient(135deg, #2d8a44 0%, #8edb7d 100%);
+        }
+
+        .stDataFrame, .stDataFrameContainer {
+            background: rgba(9, 33, 18, 0.42);
+            border-radius: 0.8rem;
+        }
+
+        .stSuccess, .stInfo, .stWarning {
+            background: rgba(16, 64, 32, 0.85);
+            border: 1px solid rgba(162, 233, 164, 0.4);
+            color: #f3fff0;
+        }
+
+        .metric-container {
+            background: rgba(12, 52, 26, 0.58);
+            border: 1px solid rgba(157, 219, 160, 0.4);
+            border-radius: 0.8rem;
+            padding: 0.8rem;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 language = st.sidebar.selectbox("Language / भाषा", LANGUAGE_NAMES)
 text = TRANSLATIONS[language]
 st.title("MandiMind")

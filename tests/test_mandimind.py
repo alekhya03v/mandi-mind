@@ -37,6 +37,24 @@ def test_agent_accounts_for_transport_costs(monkeypatch):
     assert result["transport_cost_total"] == 10000
     assert result["net_extra_revenue"] < result["estimated_extra_revenue"]
 
+def test_agent_compares_final_profit_by_market(monkeypatch):
+    monkeypatch.setenv("USE_SAMPLE_DATA", "true")
+    result = MandiMindAgent().advise(
+        "Onion", 50, "Maharashtra", "Nashik",
+        transport_cost_per_km=20,
+        market_distances_km={
+            "Lasalgaon": 100,
+            "Sangamner": 10,
+            "Pune": 40,
+            "Ahmednagar": 50,
+            "Solapur": 60,
+        },
+    )
+    rows = {row["market"]: row for row in result["market_profit_comparison"]}
+    assert rows["Sangamner"]["transport_cost"] == 200
+    assert rows["Lasalgaon"]["net_profit"] == rows["Lasalgaon"]["gross_revenue"] - rows["Lasalgaon"]["transport_cost"]
+    assert result["best_profit_market"]["market"] == "Sangamner"
+
 
 def test_agent_creates_tool_trace(monkeypatch):
     monkeypatch.setenv("USE_SAMPLE_DATA", "true")

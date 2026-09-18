@@ -49,12 +49,12 @@ class MandiMindAgent:
         return (f"Sell locally for now. The best alternate price is not at least {THRESHOLD_PERCENT:.0f}% higher "
                 f"than the local modal price of ₹{local['modal_price']:,.0f} per quintal. This comparison does not include transport, commission, or other costs.")
 
-    def advise(self, commodity: str, quantity: float, state: str, district: str, language: str = "English", transport_cost_per_quintal: float = 0.0, distance_km: float = 0.0, transport_cost_per_km: float = 0.0) -> dict[str, Any]:
+    def advise(self, commodity: str, quantity: float, state: str, district: str, language: str = "English", transport_cost_per_quintal: float = 0.0, distance_km: float = 0.0, transport_cost_per_km: float = 0.0, market_distances_km: dict[str, float] | None = None) -> dict[str, Any]:
         trace = []
         local_result = self._call_tool(trace, get_mandi_prices,
             {"commodity": commodity, "state": state, "district": district})
         comparison = self._call_tool(trace, compare_nearby_markets,
-            {"commodity": commodity, "state": state, "top_n": 5})
+            {"commodity": commodity, "state": state, "top_n": 100})
         # A district can contain more than one mandi. For this simple PoC, prefer
         # the market whose name matches the district, such as Nashik mandi in Nashik.
         local = next(
@@ -67,6 +67,24 @@ class MandiMindAgent:
         )
         ranked = comparison["markets"]
         alternate = next((row for row in ranked if not local or row["market"] != local["market"]), None)
+        market_distances_km = market_distances_km or {}
+        market_profit_comparison = []
+        for market in ranked:
+            market_distance = max(0.0, float(market_distances_km.get(market["market"], distance_km)))
+            market_transport = (
+                quantity * max(0.0, transport_cost_per_quintal)
+                if transport_cost_per_quintal > 0
+                else market_distance * max(0.0, transport_cost_per_km)
+            )
+            gross_revenue = (market["modal_price"] or 0.0) * quantity
+            market_profit_comparison.append({
+                **market,
+                "distance_km": market_distance,
+                "gross_revenue": round(gross_revenue, 2),
+                "transport_cost": round(market_transport, 2),
+                "net_profit": round(gross_revenue - market_transport, 2),
+            })
+        best_profit_market = max(market_profit_comparison, key=lambda row: row["net_profit"], default=None)
         local_trend = self._call_tool(trace, get_price_trend,
             {"commodity": commodity, "state": state, "market": local["market"], "days": 7}) if local else None
         alternate_trend = self._call_tool(trace, get_price_trend,
@@ -81,13 +99,18 @@ class MandiMindAgent:
             elif distance_km > 0 and transport_cost_per_km > 0:
                 transport_cost_total = distance_km * transport_cost_per_km
         net_extra_revenue = max(0.0, extra - transport_cost_total)
-        recommendation = self._fallback_text(commodity, quantity, local, alternate, percent, extra, language)
+        profit_alternate = best_profit_market if best_profit_market and (not local or best_profit_market["market"] != local["market"]) else None
+        local_profit = next((row["net_profit"] for row in market_profit_comparison if local and row["market"] == local["market"]), 0.0)
+        profit_extra = max(0.0, best_profit_market["net_profit"] - local_profit) if profit_alternate else extra
+        recommendation = self._fallback_text(commodity, quantity, local, profit_alternate or alternate, percent, profit_extra, language)
         llm_used = False
         llm = get_llm()
         if llm and local:
             prompt = (f"Commodity: {commodity}. Quantity: {quantity} quintals. Local market: {local['market']} at "
                       f"₹{local['modal_price']}/quintal. Best alternate: {alternate['market'] if alternate else 'none'} "
                       f"at ₹{alternate['modal_price'] if alternate else 0}/quintal. Difference: {percent}%. "
+                      f"The best market by net profit is {best_profit_market['market'] if best_profit_market else 'none'} at "
+                      f"₹{best_profit_market['net_profit'] if best_profit_market else 0:,.0f} after transport. "
                       f"Distance: {distance_km} km. Transport cost: ₹{transport_cost_total:,.0f}. Net gain after transport: ₹{net_extra_revenue:,.0f}. "
                       f"Decision: {recommendation} Write two short practical sentences. Do not change the decision. "
                       f"Mention transport and commissions are not included. Write in {language}.")
@@ -98,7 +121,8 @@ class MandiMindAgent:
             except Exception:
                 pass
         return {"recommendation": recommendation, "local_market": local, "best_market": alternate,
-                "comparison_markets": ranked, "local_trend": local_trend, "alternate_trend": alternate_trend,
+                "comparison_markets": ranked, "market_profit_comparison": market_profit_comparison,
+                "best_profit_market": best_profit_market, "local_trend": local_trend, "alternate_trend": alternate_trend,
                 "percent_difference": percent, "estimated_extra_revenue": round(extra, 2),
                 "distance_km": distance_km, "transport_cost_per_km": transport_cost_per_km,
                 "transport_cost_total": round(transport_cost_total, 2),

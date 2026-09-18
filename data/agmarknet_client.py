@@ -54,7 +54,17 @@ class AgmarknetClient:
               "filters[commodity]": commodity.strip().title()}
         if district:
             params["filters[district]"] = district.strip().title()
-        response = requests.get(API_URL, params=params, timeout=25)
+        response = requests.get(
+            API_URL,
+            params=params,
+            headers={
+                "Accept": "application/json",
+                "Accept-Encoding": "identity",
+                "Connection": "close",
+                "User-Agent": "MandiMind/1.0",
+            },
+            timeout=25,
+        )
         response.raise_for_status()
         records = response.json().get("records", [])
         if not isinstance(records, list):

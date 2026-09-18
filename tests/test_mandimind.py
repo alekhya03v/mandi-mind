@@ -28,6 +28,16 @@ def test_api_failure_uses_sample_data(monkeypatch):
     rows, source, note = AgmarknetClient().fetch("Onion", "Maharashtra")
     assert rows and source == "sample data fallback" and "unavailable" in note
 
+def test_agent_accounts_for_transport_costs(monkeypatch):
+    monkeypatch.setenv("USE_SAMPLE_DATA", "true")
+    monkeypatch.setenv("LLM_PROVIDER", "auto")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    result = MandiMindAgent().advise("Onion", 50, "Maharashtra", "Nashik", transport_cost_per_quintal=200)
+    assert result["transport_cost_total"] == 10000
+    assert result["net_extra_revenue"] < result["estimated_extra_revenue"]
+
+
 def test_agent_creates_tool_trace(monkeypatch):
     monkeypatch.setenv("USE_SAMPLE_DATA", "true")
     monkeypatch.setenv("LLM_PROVIDER", "auto")

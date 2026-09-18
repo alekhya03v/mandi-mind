@@ -49,31 +49,16 @@ st.markdown(
     """
     <style>
         .stApp {
-            background-image: linear-gradient(rgba(12, 58, 25, 0.72), rgba(12, 58, 25, 0.82)),
-                url("https://images.unsplash.com/photo-1501004318641-b39e6451bec6?auto=format&fit=crop&w=1600&q=80");
+            background-image: linear-gradient(rgba(15, 71, 35, 0.68), rgba(15, 71, 35, 0.75)),
+                url("https://images.unsplash.com/photo-1464226184884-fa52ac9d1d74?auto=format&fit=crop&w=1800&q=80");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            color: #f3fff0;
+            color: #f2fff4;
         }
 
-        .stApp > div {
-            color: #f3fff0;
-        }
-
-        h1, h2, h3, h4, h5, h6, p, div, label, .stSelectbox, .stTextInput, .stNumberInput {
-            color: #f3fff0;
-        }
-
-        [data-testid="stSidebar"] {
-            background: rgba(15, 52, 27, 0.82);
-            border-right: 1px solid rgba(176, 232, 176, 0.4);
-            backdrop-filter: blur(5px);
-        }
-
-        [data-testid="stSidebar"] .stSelectbox label,
-        [data-testid="stSidebar"] .stSelectbox div {
-            color: #f3fff0;
+        .stApp > div, h1, h2, h3, h4, h5, h6, p, div, label {
+            color: #f2fff4;
         }
 
         .block-container {
@@ -81,36 +66,76 @@ st.markdown(
             padding-bottom: 3rem;
         }
 
+        [data-testid="stSidebar"] {
+            background: linear-gradient(180deg, rgba(6, 55, 28, 0.94), rgba(10, 74, 38, 0.9));
+            border-right: 1px solid rgba(180, 236, 186, 0.22);
+            backdrop-filter: blur(6px);
+        }
+
+        [data-testid="stSidebar"] .stSelectbox label,
+        [data-testid="stSidebar"] .stSelectbox div,
+        [data-testid="stSidebar"] .stSelectbox .css-1d391kg,
+        [data-testid="stSidebar"] .stSelectbox [data-baseweb="select"] {
+            color: #f2fff4 !important;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .stSelectbox > div > div,
+        .stTextInput > div > div,
+        .stNumberInput > div > div {
+            background: rgba(234, 255, 238, 0.9) !important;
+            border: 1px solid rgba(36, 120, 58, 0.55) !important;
+            border-radius: 0.85rem !important;
+            box-shadow: none !important;
+        }
+
+        .stSelectbox label,
+        .stTextInput label,
+        .stNumberInput label {
+            color: #f2fff4 !important;
+            font-weight: 600;
+        }
+
+        .stSelectbox select,
+        .stTextInput input,
+        .stNumberInput input {
+            background: rgba(234, 255, 238, 0.9) !important;
+            color: #173d24 !important;
+            border: none !important;
+            border-radius: 0.85rem !important;
+        }
+
         .stButton > button,
         .stFormSubmitButton > button {
-            background: linear-gradient(135deg, #2d8a44 0%, #7ccf70 100%);
-            color: white;
-            border: none;
+            background: linear-gradient(135deg, #2b8d43 0%, #7edc7a 100%);
+            color: #0c2f18;
+            border: 1px solid rgba(24, 97, 45, 0.35);
             border-radius: 0.8rem;
-            font-weight: 600;
-            padding: 0.6rem 1.2rem;
-            box-shadow: 0 6px 18px rgba(25, 98, 48, 0.35);
+            font-weight: 700;
+            padding: 0.6rem 1.3rem;
+            box-shadow: 0 8px 22px rgba(19, 94, 46, 0.26);
         }
 
         .stButton > button:hover,
         .stFormSubmitButton > button:hover {
-            background: linear-gradient(135deg, #2d8a44 0%, #8edb7d 100%);
+            background: linear-gradient(135deg, #46a759 0%, #99eb90 100%);
         }
 
         .stDataFrame, .stDataFrameContainer {
-            background: rgba(9, 33, 18, 0.42);
+            background: rgba(9, 35, 18, 0.45);
+            border: 1px solid rgba(191, 235, 196, 0.2);
             border-radius: 0.8rem;
         }
 
         .stSuccess, .stInfo, .stWarning {
-            background: rgba(16, 64, 32, 0.85);
-            border: 1px solid rgba(162, 233, 164, 0.4);
-            color: #f3fff0;
+            background: rgba(15, 75, 38, 0.8);
+            border: 1px solid rgba(169, 236, 174, 0.35);
+            color: #f4fff5;
         }
 
         .metric-container {
-            background: rgba(12, 52, 26, 0.58);
-            border: 1px solid rgba(157, 219, 160, 0.4);
+            background: rgba(13, 58, 28, 0.58);
+            border: 1px solid rgba(164, 233, 167, 0.35);
             border-radius: 0.8rem;
             padding: 0.8rem;
         }

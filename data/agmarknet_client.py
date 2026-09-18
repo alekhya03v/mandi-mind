@@ -22,9 +22,9 @@ def _normalise(row: dict[str, Any]) -> dict[str, Any]:
             return float(raw) if raw not in (None, "", "NA") else None
         except (TypeError, ValueError):
             return None
-    return {"state": str(value("state")), "district": str(value("district")),
-            "market": str(value("market")), "commodity": str(value("commodity")),
-            "variety": str(value("variety")), "arrival_date": str(value("arrival_date")),
+    return {"state": str(value("state")).strip(), "district": str(value("district")).strip(),
+            "market": str(value("market")).strip(), "commodity": str(value("commodity")).strip(),
+            "variety": str(value("variety")).strip(), "arrival_date": str(value("arrival_date")).strip(),
             "min_price": number("min_price"), "max_price": number("max_price"),
             "modal_price": number("modal_price"),
             "arrivals": number("arrivals", "arrival", "arrival_quantity")}
@@ -54,7 +54,7 @@ class AgmarknetClient:
               "filters[commodity]": commodity.strip().title()}
         if district:
             params["filters[district]"] = district.strip().title()
-        response = requests.get(API_URL, params=params, timeout=12)
+        response = requests.get(API_URL, params=params, timeout=25)
         response.raise_for_status()
         records = response.json().get("records", [])
         if not isinstance(records, list):

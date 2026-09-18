@@ -55,6 +55,24 @@ def test_agent_compares_final_profit_by_market(monkeypatch):
     assert rows["Lasalgaon"]["net_profit"] == rows["Lasalgaon"]["gross_revenue"] - rows["Lasalgaon"]["transport_cost"]
     assert result["best_profit_market"]["market"] == "Sangamner"
 
+def test_agent_automatically_uses_location_routing(monkeypatch):
+    monkeypatch.setenv("USE_SAMPLE_DATA", "true")
+    monkeypatch.setattr(
+        "agent.agent.estimate_market_distances",
+        lambda place, district, state, pincode, markets: {
+            "distances_km": {market["market"]: 10 for market in markets},
+            "source": "test routing",
+            "note": None,
+        },
+    )
+    result = MandiMindAgent().advise(
+        "Onion", 50, "Maharashtra", "Nashik",
+        place="Nashik", pincode="422001",
+    )
+    assert result["routing"]["source"] == "test routing"
+    assert result["transport_cost_per_km"] == 20.0
+    assert result["market_profit_comparison"][0]["transport_cost"] == 200
+
 
 def test_agent_creates_tool_trace(monkeypatch):
     monkeypatch.setenv("USE_SAMPLE_DATA", "true")

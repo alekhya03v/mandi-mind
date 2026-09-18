@@ -1,7 +1,7 @@
 """Streamlit entry point for the MandiMind PoC."""
 import streamlit as st
 from agent.agent import MandiMindAgent
-from data.agmarknet_client import AgmarknetClient, latest_by_market
+from data.agmarknet_client import AgmarknetClient
 
 TRANSLATIONS = {
     "English": {
@@ -60,20 +60,9 @@ with st.form("advice_form"):
     commodity_options = commodity_loader(state) if callable(commodity_loader) else ["Onion", "Potato", "Tomato"]
     commodity = left.selectbox(text["commodity"], commodity_options)
     quantity = middle.number_input(text["quantity"], min_value=1.0, value=50.0, step=1.0)
-    district = left.text_input(text["district"], value="Nashik")
-    transport_cost_per_km = right.number_input("Transport cost (₹/km)", min_value=0.0, value=20.0, step=1.0)
-    available_rows, _, _ = client.fetch(commodity, state)
-    available_markets = latest_by_market(available_rows)
-    st.markdown("**Distance to each market (km)**")
-    market_distances_km = {}
-    for index in range(0, len(available_markets), 3):
-        distance_columns = st.columns(3)
-        for column, market in zip(distance_columns, available_markets[index:index + 3]):
-            with column:
-                market_distances_km[market["market"]] = st.number_input(
-                    market["market"], min_value=0.0, value=50.0, step=5.0,
-                    key=f"distance_{market['market']}"
-                )
+    place = left.text_input("Your place / village", value="Nashik")
+    district = middle.text_input(text["district"], value="Nashik")
+    pincode = right.text_input("PIN code", value="422001", max_chars=6)
     submitted = st.form_submit_button(text["submit"], type="primary")
 if submitted:
     result = MandiMindAgent().advise(
@@ -82,11 +71,13 @@ if submitted:
         state,
         district,
         language,
-        transport_cost_per_km=transport_cost_per_km,
-        market_distances_km=market_distances_km,
+        place=place,
+        pincode=pincode,
     )
     st.info(f"{text['source']}: {result['source']}")
     if result["source_note"]: st.warning(result["source_note"])
+    if result["routing"]["note"]: st.warning(result["routing"]["note"])
+    st.caption(f"Distance and transport estimates: {result['routing']['source']}. Rate used: ₹{result['transport_cost_per_km']:,.0f}/km.")
     st.subheader(text["recommendation"])
     st.success(result["recommendation"])
     if result["local_market"]:

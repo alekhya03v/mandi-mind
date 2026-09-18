@@ -4,8 +4,10 @@ from typing import Any
 from langchain_core.messages import HumanMessage, SystemMessage
 from agent.llm import get_llm
 from agent.tools import compare_nearby_markets, get_mandi_prices, get_price_trend
+from data.routing import estimate_market_distances
 
 THRESHOLD_PERCENT = 5.0
+DEFAULT_TRANSPORT_COST_PER_KM = 20.0
 
 class MandiMindAgent:
     """Calls tools in a fixed order so the advice is easy to audit and explain."""
@@ -49,7 +51,7 @@ class MandiMindAgent:
         return (f"Sell locally for now. The best alternate price is not at least {THRESHOLD_PERCENT:.0f}% higher "
                 f"than the local modal price of ₹{local['modal_price']:,.0f} per quintal. This comparison does not include transport, commission, or other costs.")
 
-    def advise(self, commodity: str, quantity: float, state: str, district: str, language: str = "English", transport_cost_per_quintal: float = 0.0, distance_km: float = 0.0, transport_cost_per_km: float = 0.0, market_distances_km: dict[str, float] | None = None) -> dict[str, Any]:
+    def advise(self, commodity: str, quantity: float, state: str, district: str, language: str = "English", transport_cost_per_quintal: float = 0.0, distance_km: float = 0.0, transport_cost_per_km: float = 0.0, market_distances_km: dict[str, float] | None = None, place: str = "", pincode: str = "") -> dict[str, Any]:
         trace = []
         local_result = self._call_tool(trace, get_mandi_prices,
             {"commodity": commodity, "state": state, "district": district})
@@ -67,14 +69,18 @@ class MandiMindAgent:
         )
         ranked = comparison["markets"]
         alternate = next((row for row in ranked if not local or row["market"] != local["market"]), None)
-        market_distances_km = market_distances_km or {}
+        routing = {"distances_km": market_distances_km or {}, "source": "manual or compatibility input", "note": None}
+        if place or pincode:
+            routing = estimate_market_distances(place, district, state, pincode, ranked)
+        market_distances_km = routing["distances_km"]
+        effective_transport_rate = max(0.0, transport_cost_per_km or DEFAULT_TRANSPORT_COST_PER_KM)
         market_profit_comparison = []
         for market in ranked:
             market_distance = max(0.0, float(market_distances_km.get(market["market"], distance_km)))
             market_transport = (
                 quantity * max(0.0, transport_cost_per_quintal)
                 if transport_cost_per_quintal > 0
-                else market_distance * max(0.0, transport_cost_per_km)
+                else market_distance * effective_transport_rate
             )
             gross_revenue = (market["modal_price"] or 0.0) * quantity
             market_profit_comparison.append({
@@ -122,9 +128,11 @@ class MandiMindAgent:
                 pass
         return {"recommendation": recommendation, "local_market": local, "best_market": alternate,
                 "comparison_markets": ranked, "market_profit_comparison": market_profit_comparison,
-                "best_profit_market": best_profit_market, "local_trend": local_trend, "alternate_trend": alternate_trend,
+                "best_profit_market": best_profit_market, "routing": routing,
+                "transport_cost_per_km": effective_transport_rate,
+                "local_trend": local_trend, "alternate_trend": alternate_trend,
                 "percent_difference": percent, "estimated_extra_revenue": round(extra, 2),
-                "distance_km": distance_km, "transport_cost_per_km": transport_cost_per_km,
+                "distance_km": distance_km,
                 "transport_cost_total": round(transport_cost_total, 2),
                 "net_extra_revenue": round(net_extra_revenue, 2), "trace": trace,
                 "source": local_result["source"], "source_note": local_result["note"] or comparison["note"],

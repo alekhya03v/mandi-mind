@@ -61,9 +61,19 @@ with st.form("advice_form"):
     commodity = left.selectbox(text["commodity"], commodity_options)
     quantity = middle.number_input(text["quantity"], min_value=1.0, value=50.0, step=1.0)
     district = left.text_input(text["district"], value="Nashik")
+    distance_km = middle.number_input("Distance (km)", min_value=0.0, value=50.0, step=5.0)
+    transport_cost_per_km = right.number_input("Transport cost (₹/km)", min_value=0.0, value=20.0, step=1.0)
     submitted = st.form_submit_button(text["submit"], type="primary")
 if submitted:
-    result = MandiMindAgent().advise(commodity, quantity, state, district, language)
+    result = MandiMindAgent().advise(
+        commodity,
+        quantity,
+        state,
+        district,
+        language,
+        distance_km=distance_km,
+        transport_cost_per_km=transport_cost_per_km,
+    )
     st.info(f"{text['source']}: {result['source']}")
     if result["source_note"]: st.warning(result["source_note"])
     st.subheader(text["recommendation"])
@@ -73,7 +83,10 @@ if submitted:
         first.metric(text["local_price"], f"₹{result['local_market']['modal_price']:,.0f}/quintal", result['local_market']['market'])
         if result["best_market"]:
             second.metric(text["best_alternate"], f"₹{result['best_market']['modal_price']:,.0f}/quintal", result['best_market']['market'])
-        third.metric(text["difference"], f"₹{result['estimated_extra_revenue']:,.0f}")
+        third.metric("Transport cost", f"₹{result['transport_cost_total']:,.0f}")
+        net_col, gross_col = st.columns(2)
+        net_col.metric("Net gain after transport", f"₹{result['net_extra_revenue']:,.0f}")
+        gross_col.metric(text["difference"], f"₹{result['estimated_extra_revenue']:,.0f}")
     st.caption(text["gross_note"])
     st.subheader(text["comparison"])
     st.dataframe([{text["market"]: row["market"], text["market_district"]: row["district"], text["modal_price"]: row["modal_price"], text["arrivals"]: row["arrivals"] if row["arrivals"] is not None else text["not_reported"]} for row in result["comparison_markets"]], use_container_width=True, hide_index=True)

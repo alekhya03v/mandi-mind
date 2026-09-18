@@ -49,7 +49,7 @@ class MandiMindAgent:
         return (f"Sell locally for now. The best alternate price is not at least {THRESHOLD_PERCENT:.0f}% higher "
                 f"than the local modal price of ₹{local['modal_price']:,.0f} per quintal. This comparison does not include transport, commission, or other costs.")
 
-    def advise(self, commodity: str, quantity: float, state: str, district: str, language: str = "English", transport_cost_per_quintal: float = 0.0) -> dict[str, Any]:
+    def advise(self, commodity: str, quantity: float, state: str, district: str, language: str = "English", transport_cost_per_quintal: float = 0.0, distance_km: float = 0.0, transport_cost_per_km: float = 0.0) -> dict[str, Any]:
         trace = []
         local_result = self._call_tool(trace, get_mandi_prices,
             {"commodity": commodity, "state": state, "district": district})
@@ -76,7 +76,10 @@ class MandiMindAgent:
         if local and alternate and local["modal_price"]:
             percent = round(((alternate["modal_price"] - local["modal_price"]) / local["modal_price"]) * 100, 2)
             extra = max(0, alternate["modal_price"] - local["modal_price"]) * quantity
-            transport_cost_total = quantity * max(0.0, transport_cost_per_quintal)
+            if transport_cost_per_quintal > 0:
+                transport_cost_total = quantity * transport_cost_per_quintal
+            elif distance_km > 0 and transport_cost_per_km > 0:
+                transport_cost_total = distance_km * transport_cost_per_km
         net_extra_revenue = max(0.0, extra - transport_cost_total)
         recommendation = self._fallback_text(commodity, quantity, local, alternate, percent, extra, language)
         llm_used = False
@@ -85,7 +88,7 @@ class MandiMindAgent:
             prompt = (f"Commodity: {commodity}. Quantity: {quantity} quintals. Local market: {local['market']} at "
                       f"₹{local['modal_price']}/quintal. Best alternate: {alternate['market'] if alternate else 'none'} "
                       f"at ₹{alternate['modal_price'] if alternate else 0}/quintal. Difference: {percent}%. "
-                      f"Transport cost: ₹{transport_cost_total:,.0f}. Net gain after transport: ₹{net_extra_revenue:,.0f}. "
+                      f"Distance: {distance_km} km. Transport cost: ₹{transport_cost_total:,.0f}. Net gain after transport: ₹{net_extra_revenue:,.0f}. "
                       f"Decision: {recommendation} Write two short practical sentences. Do not change the decision. "
                       f"Mention transport and commissions are not included. Write in {language}.")
             try:
@@ -97,6 +100,7 @@ class MandiMindAgent:
         return {"recommendation": recommendation, "local_market": local, "best_market": alternate,
                 "comparison_markets": ranked, "local_trend": local_trend, "alternate_trend": alternate_trend,
                 "percent_difference": percent, "estimated_extra_revenue": round(extra, 2),
+                "distance_km": distance_km, "transport_cost_per_km": transport_cost_per_km,
                 "transport_cost_total": round(transport_cost_total, 2),
                 "net_extra_revenue": round(net_extra_revenue, 2), "trace": trace,
                 "source": local_result["source"], "source_note": local_result["note"] or comparison["note"],

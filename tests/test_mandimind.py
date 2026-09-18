@@ -14,7 +14,7 @@ def test_market_ranking(monkeypatch):
 
 def test_trend_calculation(monkeypatch):
     monkeypatch.setenv("USE_SAMPLE_DATA", "true")
-    trend = get_price_trend.invoke({"commodity": "Onion", "market": "Nashik", "days": 7})
+    trend = get_price_trend.invoke({"commodity": "Onion", "state": "Maharashtra", "market": "Nashik", "days": 7})
     assert trend["direction"] == "rising" and trend["percent_change"] > 0
 
 def test_api_failure_uses_sample_data(monkeypatch):

@@ -15,7 +15,31 @@ class MandiMindAgent:
         return result
 
     @staticmethod
-    def _fallback_text(commodity, quantity, local, alternate, percent, extra):
+    def _fallback_text(commodity, quantity, local, alternate, percent, extra, language):
+        if language == "Hindi":
+            if not local: return f"चयनित जिले में {commodity} की वर्तमान कीमत नहीं मिली।"
+            if alternate and percent >= THRESHOLD_PERCENT: return f"{alternate['market']} में बेचने पर विचार करें। इसकी मॉडल कीमत स्थानीय कीमत से {percent:.1f}% अधिक है। {quantity:g} क्विंटल के लिए परिवहन और अन्य लागतों से पहले लगभग ₹{extra:,.0f} अधिक मिल सकते हैं।"
+            return f"अभी स्थानीय बाजार में बेचें। वैकल्पिक बाजार की कीमत स्थानीय मॉडल कीमत से कम से कम {THRESHOLD_PERCENT:.0f}% अधिक नहीं है। परिवहन और अन्य लागतें शामिल नहीं हैं।"
+        if language == "Marathi":
+            if not local: return f"निवडलेल्या जिल्ह्यात {commodity} ची सध्याची किंमत सापडली नाही."
+            if alternate and percent >= THRESHOLD_PERCENT: return f"{alternate['market']} येथे विक्री करण्याचा विचार करा. तेथील मॉडेल किंमत स्थानिक किमतीपेक्षा {percent:.1f}% जास्त आहे. {quantity:g} क्विंटलसाठी वाहतूक व इतर खर्चांपूर्वी अंदाजे ₹{extra:,.0f} अधिक मिळू शकतात."
+            return f"सध्या स्थानिक बाजारात विक्री करा. पर्यायी बाजाराची किंमत स्थानिक मॉडेल किमतीपेक्षा किमान {THRESHOLD_PERCENT:.0f}% जास्त नाही. वाहतूक व इतर खर्च समाविष्ट नाहीत."
+        if language == "Telugu":
+            if not local: return f"ఎంచుకున్న జిల్లాలో {commodity} యొక్క ప్రస్తుత ధర దొరకలేదు."
+            if alternate and percent >= THRESHOLD_PERCENT: return f"{alternate['market']}లో అమ్మడం పరిగణించండి. అక్కడి మోడల్ ధర స్థానిక ధర కంటే {percent:.1f}% ఎక్కువ. {quantity:g} క్వింటాళ్లకు రవాణా మరియు ఇతర ఖర్చులకు ముందు సుమారు ₹{extra:,.0f} ఎక్కువ రావచ్చు."
+            return f"ప్రస్తుతానికి స్థానిక మార్కెట్‌లో అమ్మండి. ప్రత్యామ్నాయ మార్కెట్ ధర స్థానిక మోడల్ ధర కంటే కనీసం {THRESHOLD_PERCENT:.0f}% ఎక్కువ కాదు. రవాణా మరియు ఇతర ఖర్చులు ఇందులో లేవు."
+        if language == "Tamil":
+            if not local: return f"தேர்ந்தெடுக்கப்பட்ட மாவட்டத்தில் {commodity}க்கான தற்போதைய விலை கிடைக்கவில்லை."
+            if alternate and percent >= THRESHOLD_PERCENT: return f"{alternate['market']} சந்தையில் விற்கலாம். அங்குள்ள மாடல் விலை உள்ளூர் விலையை விட {percent:.1f}% அதிகம். {quantity:g} குவிண்டால்களுக்கு போக்குவரத்து மற்றும் பிற செலவுகளுக்கு முன் சுமார் ₹{extra:,.0f} கூடுதலாக கிடைக்கலாம்."
+            return f"தற்போதைக்கு உள்ளூர் சந்தையில் விற்கவும். மாற்றுச் சந்தை விலை உள்ளூர் மாடல் விலையை விட குறைந்தது {THRESHOLD_PERCENT:.0f}% அதிகமாக இல்லை. போக்குவரத்து மற்றும் பிற செலவுகள் சேர்க்கப்படவில்லை."
+        if language == "Kannada":
+            if not local: return f"ಆಯ್ಕೆ ಮಾಡಿದ ಜಿಲ್ಲೆಯಲ್ಲಿ {commodity}ಯ ಪ್ರಸ್ತುತ ಬೆಲೆ ಕಂಡುಬಂದಿಲ್ಲ."
+            if alternate and percent >= THRESHOLD_PERCENT: return f"{alternate['market']}ಯಲ್ಲಿ ಮಾರಾಟ ಮಾಡುವುದನ್ನು ಪರಿಗಣಿಸಿ. ಅಲ್ಲಿನ ಮಾದರಿ ಬೆಲೆ ಸ್ಥಳೀಯ ಬೆಲೆಗಿಂತ {percent:.1f}% ಹೆಚ್ಚಾಗಿದೆ. {quantity:g} ಕ್ವಿಂಟಾಲ್‌ಗೆ ಸಾರಿಗೆ ಮತ್ತು ಇತರ ವೆಚ್ಚಗಳ ಮೊದಲು ಸುಮಾರು ₹{extra:,.0f} ಹೆಚ್ಚು ಸಿಗಬಹುದು."
+            return f"ಸದ್ಯಕ್ಕೆ ಸ್ಥಳೀಯ ಮಾರುಕಟ್ಟೆಯಲ್ಲಿ ಮಾರಾಟ ಮಾಡಿ. ಪರ್ಯಾಯ ಮಾರುಕಟ್ಟೆಯ ಬೆಲೆ ಸ್ಥಳೀಯ ಮಾದರಿ ಬೆಲೆಗಿಂತ ಕನಿಷ್ಠ {THRESHOLD_PERCENT:.0f}% ಹೆಚ್ಚಿಲ್ಲ. ಸಾರಿಗೆ ಮತ್ತು ಇತರ ವೆಚ್ಚಗಳನ್ನು ಸೇರಿಸಲಾಗಿಲ್ಲ."
+        if language == "Malayalam":
+            if not local: return f"തിരഞ്ഞെടുത്ത ജില്ലയിൽ {commodity}യുടെ നിലവിലെ വില കണ്ടെത്താനായില്ല."
+            if alternate and percent >= THRESHOLD_PERCENT: return f"{alternate['market']}യിൽ വിൽക്കുന്നത് പരിഗണിക്കുക. അവിടത്തെ മോഡൽ വില പ്രാദേശിക വിലയേക്കാൾ {percent:.1f}% കൂടുതലാണ്. {quantity:g} ക്വിന്റലിന് ഗതാഗതവും മറ്റ് ചെലവുകളും കണക്കാക്കുന്നതിന് മുമ്പ് ഏകദേശം ₹{extra:,.0f} കൂടുതൽ ലഭിക്കാം."
+            return f"ഇപ്പോൾ പ്രാദേശിക വിപണിയിൽ വിൽക്കുക. ബദൽ വിപണി വില പ്രാദേശിക മോഡൽ വിലയേക്കാൾ കുറഞ്ഞത് {THRESHOLD_PERCENT:.0f}% കൂടുതലല്ല. ഗതാഗതവും മറ്റ് ചെലവുകളും ഉൾപ്പെടുത്തിയിട്ടില്ല."
         if not local:
             return f"I could not find a current {commodity} price for the selected district."
         if alternate and percent >= THRESHOLD_PERCENT:
@@ -25,7 +49,7 @@ class MandiMindAgent:
         return (f"Sell locally for now. The best alternate price is not at least {THRESHOLD_PERCENT:.0f}% higher "
                 f"than the local modal price of ₹{local['modal_price']:,.0f} per quintal. This comparison does not include transport, commission, or other costs.")
 
-    def advise(self, commodity: str, quantity: float, state: str, district: str) -> dict[str, Any]:
+    def advise(self, commodity: str, quantity: float, state: str, district: str, language: str = "English") -> dict[str, Any]:
         trace = []
         local_result = self._call_tool(trace, get_mandi_prices,
             {"commodity": commodity, "state": state, "district": district})
@@ -51,7 +75,7 @@ class MandiMindAgent:
         if local and alternate and local["modal_price"]:
             percent = round(((alternate["modal_price"] - local["modal_price"]) / local["modal_price"]) * 100, 2)
             extra = max(0, alternate["modal_price"] - local["modal_price"]) * quantity
-        recommendation = self._fallback_text(commodity, quantity, local, alternate, percent, extra)
+        recommendation = self._fallback_text(commodity, quantity, local, alternate, percent, extra, language)
         llm_used = False
         llm = get_llm()
         if llm and local:
@@ -59,7 +83,7 @@ class MandiMindAgent:
                       f"₹{local['modal_price']}/quintal. Best alternate: {alternate['market'] if alternate else 'none'} "
                       f"at ₹{alternate['modal_price'] if alternate else 0}/quintal. Difference: {percent}%. "
                       f"Decision: {recommendation} Write two short practical sentences. Do not change the decision. "
-                      "Mention that transport and commissions are not included.")
+                      f"Mention that transport and commissions are not included. Write in {language}.")
             try:
                 recommendation = str(llm.invoke([SystemMessage(content="You write clear, cautious mandi price advice."),
                     HumanMessage(content=prompt)]).content)

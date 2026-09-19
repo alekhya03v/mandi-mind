@@ -3,7 +3,7 @@
 
 ### AI-powered Mandi Price Comparison & Market Recommendation
 
-[**Try the Live App**](https://mandi-mind-suq7zkmcdaksyjcnq7lrem.streamlit.app/)  
+[**Try the Live App**](https://mandi-mind.streamlit.app/)  
 [**View Source Code**](https://github.com/alekhya03v/mandi-mind)
 
 MandiMind is a small AI Agents project I built to explore a practical question a farmer may face: should I sell my crop in the local mandi today, or is another market in the state offering a noticeably better price? The app looks up mandi prices, compares markets, checks recent price movement, and explains the suggestion in plain language.

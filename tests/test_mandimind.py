@@ -98,6 +98,23 @@ def test_data_dropdowns_are_valid_for_live_records(monkeypatch):
     assert "Lasalgaon" in markets
 
 
+def test_live_dropdown_uses_api_data_when_sample_mode_is_off(monkeypatch):
+    monkeypatch.setenv("USE_SAMPLE_DATA", "false")
+    monkeypatch.setenv("DATA_GOV_API_KEY", "test-key")
+    monkeypatch.setattr(
+        "data.agmarknet_client.AgmarknetClient._live_rows",
+        lambda self, state=None, district=None, commodity=None: [
+            {"state": "Punjab", "district": "Ludhiana", "market": "Ludhiana", "commodity": "Wheat"},
+            {"state": "Maharashtra", "district": "Nashik", "market": "Nashik", "commodity": "Onion"},
+        ],
+    )
+    client = AgmarknetClient()
+    assert "Punjab" in client.states()
+    assert "Ludhiana" in client.districts_for_state("Punjab")
+    assert "Wheat" in client.commodities_for_state_and_district("Punjab", "Ludhiana")
+    assert "Ludhiana" in client.markets_for_state_district_commodity("Punjab", "Ludhiana", "Wheat")
+
+
 def test_search_distance_between_places_uses_haversine_fallback(monkeypatch):
     monkeypatch.setattr("data.routing._geocode", lambda query: (78.0, 20.0) if "Nashik" in query else (78.5, 18.5))
     monkeypatch.setattr("data.routing._road_distance_km", lambda origin, destination: None)

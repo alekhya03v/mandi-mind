@@ -46,20 +46,71 @@ class AgmarknetClient:
                 and match(row["state"], state) and match(row["district"], district)
                 and match(row["market"], market)]
 
+    def _live_rows(self, state: str | None = None, district: str | None = None, commodity: str | None = None) -> list[dict[str, Any]]:
+        if not self.api_key:
+            raise RuntimeError("DATA_GOV_API_KEY is not configured.")
+        params = {"api-key": self.api_key, "format": "json", "limit": 2000}
+        if state:
+            params["filters[state.keyword]"] = state.strip().title()
+        if district:
+            params["filters[district]"] = district.strip().title()
+        if commodity:
+            params["filters[commodity]"] = commodity.strip().title()
+        response = requests.get(
+            API_URL,
+            params=params,
+            headers={
+                "Accept": "application/json",
+                "Accept-Encoding": "identity",
+                "Connection": "close",
+                "User-Agent": "MandiMind/1.0",
+            },
+            timeout=25,
+        )
+        response.raise_for_status()
+        records = response.json().get("records", [])
+        if not isinstance(records, list):
+            raise RuntimeError("Agmarknet returned an unexpected response.")
+        return [_normalise(row) for row in records]
+
     def states(self) -> list[str]:
-        rows = self._sample() if self.use_sample_data else self._sample()
+        if self.use_sample_data:
+            rows = self._sample()
+        else:
+            try:
+                rows = self._live_rows()
+            except (requests.RequestException, RuntimeError, ValueError):
+                rows = self._sample()
         return sorted({str(row["state"]).strip() for row in rows if str(row.get("state", "")).strip()})
 
     def districts_for_state(self, state: str) -> list[str]:
-        rows = self._sample() if self.use_sample_data else self._sample()
+        if self.use_sample_data:
+            rows = self._sample()
+        else:
+            try:
+                rows = self._live_rows(state=state)
+            except (requests.RequestException, RuntimeError, ValueError):
+                rows = self._sample()
         return sorted({str(row["district"]).strip() for row in rows if row.get("state", "").casefold() == state.strip().casefold() and row.get("district")})
 
     def commodities_for_state_and_district(self, state: str, district: str) -> list[str]:
-        rows = self._sample() if self.use_sample_data else self._sample()
+        if self.use_sample_data:
+            rows = self._sample()
+        else:
+            try:
+                rows = self._live_rows(state=state, district=district)
+            except (requests.RequestException, RuntimeError, ValueError):
+                rows = self._sample()
         return sorted({str(row["commodity"]).strip() for row in rows if row.get("state", "").casefold() == state.strip().casefold() and row.get("district", "").casefold() == district.strip().casefold() and row.get("commodity")})
 
     def markets_for_state_district_commodity(self, state: str, district: str, commodity: str) -> list[str]:
-        rows = self._sample() if self.use_sample_data else self._sample()
+        if self.use_sample_data:
+            rows = self._sample()
+        else:
+            try:
+                rows = self._live_rows(state=state, district=district, commodity=commodity)
+            except (requests.RequestException, RuntimeError, ValueError):
+                rows = self._sample()
         return sorted({str(row["market"]).strip() for row in rows if row.get("state", "").casefold() == state.strip().casefold() and row.get("district", "").casefold() == district.strip().casefold() and row.get("commodity", "").casefold() == commodity.strip().casefold() and row.get("market")})
 
     def _live(self, commodity, state, district=None):

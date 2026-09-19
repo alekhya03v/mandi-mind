@@ -53,16 +53,46 @@ st.title("MandiMind")
 st.caption(text["caption"])
 st.write(text["intro"])
 with st.form("advice_form"):
-    left, middle, right = st.columns(3)
-    state = right.text_input(text["state"], value="Maharashtra")
     client = AgmarknetClient()
-    commodity_loader = getattr(client, "commodities_for_state", None)
-    commodity_options = commodity_loader(state) if callable(commodity_loader) else ["Onion", "Potato", "Tomato"]
-    commodity = left.selectbox(text["commodity"], commodity_options)
-    quantity = middle.number_input(text["quantity"], min_value=1.0, value=50.0, step=1.0)
-    place = left.text_input("Your place / village", value="Nashik")
-    district = middle.text_input(text["district"], value="Nashik")
-    pincode = right.text_input("PIN code", value="422001", max_chars=6)
+    state_options = client.states() or ["Maharashtra"]
+    if "state" not in st.session_state or st.session_state["state"] not in state_options:
+        st.session_state["state"] = "Maharashtra" if "Maharashtra" in state_options else state_options[0]
+    state = st.selectbox(text["state"], state_options, index=state_options.index(st.session_state["state"]))
+    if st.session_state.get("state") != state:
+        st.session_state["state"] = state
+        st.session_state["district"] = None
+        st.session_state["commodity"] = None
+        st.session_state["market"] = None
+
+    district_options = client.districts_for_state(state) or ["Nashik"]
+    if "district" not in st.session_state or st.session_state["district"] not in district_options:
+        st.session_state["district"] = district_options[0]
+    district = st.selectbox(text["district"], district_options, index=district_options.index(st.session_state["district"]))
+    if st.session_state.get("district") != district:
+        st.session_state["district"] = district
+        st.session_state["commodity"] = None
+        st.session_state["market"] = None
+
+    commodity_options = client.commodities_for_state_and_district(state, district) or ["Onion", "Potato", "Tomato"]
+    if "commodity" not in st.session_state or st.session_state["commodity"] not in commodity_options:
+        st.session_state["commodity"] = commodity_options[0]
+    commodity = st.selectbox(text["commodity"], commodity_options, index=commodity_options.index(st.session_state["commodity"]))
+    if st.session_state.get("commodity") != commodity:
+        st.session_state["commodity"] = commodity
+        st.session_state["market"] = None
+
+    market_options = client.markets_for_state_district_commodity(state, district, commodity)
+    if not market_options:
+        st.warning("No live market data is available for this state, district, and commodity combination. Try another district or commodity.")
+        market_options = ["Nashik"]
+    if "market" not in st.session_state or st.session_state["market"] not in market_options:
+        st.session_state["market"] = market_options[0]
+    market = st.selectbox("Local market / mandi", market_options, index=market_options.index(st.session_state["market"]))
+    st.session_state["market"] = market
+
+    quantity = st.number_input(text["quantity"], min_value=1.0, value=50.0, step=1.0)
+    place = st.text_input("Your place / village", value="Nashik")
+    pincode = st.text_input("PIN code", value="422001", max_chars=6)
     submitted = st.form_submit_button(text["submit"], type="primary")
 if submitted:
     result = MandiMindAgent().advise(
@@ -73,6 +103,7 @@ if submitted:
         language,
         place=place,
         pincode=pincode,
+        preferred_market=market,
     )
     st.info(f"{text['source']}: {result['source']}")
     if result["source_note"]: st.warning(result["source_note"])

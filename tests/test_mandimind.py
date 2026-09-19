@@ -85,6 +85,19 @@ def test_agent_creates_tool_trace(monkeypatch):
     assert result["best_market"]["market"] == "Lasalgaon" and result["estimated_extra_revenue"] > 0
 
 
+def test_data_dropdowns_are_valid_for_live_records(monkeypatch):
+    monkeypatch.setenv("USE_SAMPLE_DATA", "true")
+    client = AgmarknetClient()
+    states = client.states()
+    districts = client.districts_for_state("Maharashtra")
+    commodities = client.commodities_for_state_and_district("Maharashtra", "Nashik")
+    markets = client.markets_for_state_district_commodity("Maharashtra", "Nashik", "Onion")
+    assert "Maharashtra" in states
+    assert "Nashik" in districts
+    assert "Onion" in commodities
+    assert "Lasalgaon" in markets
+
+
 def test_search_distance_between_places_uses_haversine_fallback(monkeypatch):
     monkeypatch.setattr("data.routing._geocode", lambda query: (78.0, 20.0) if "Nashik" in query else (78.5, 18.5))
     monkeypatch.setattr("data.routing._road_distance_km", lambda origin, destination: None)

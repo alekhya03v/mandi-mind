@@ -51,22 +51,26 @@ class MandiMindAgent:
         return (f"Sell locally for now. The best alternate price is not at least {THRESHOLD_PERCENT:.0f}% higher "
                 f"than the local modal price of ₹{local['modal_price']:,.0f} per quintal. This comparison does not include transport, commission, or other costs.")
 
-    def advise(self, commodity: str, quantity: float, state: str, district: str, language: str = "English", transport_cost_per_quintal: float = 0.0, distance_km: float = 0.0, transport_cost_per_km: float = 0.0, market_distances_km: dict[str, float] | None = None, place: str = "", pincode: str = "") -> dict[str, Any]:
+    def advise(self, commodity: str, quantity: float, state: str, district: str, language: str = "English", transport_cost_per_quintal: float = 0.0, distance_km: float = 0.0, transport_cost_per_km: float = 0.0, market_distances_km: dict[str, float] | None = None, place: str = "", pincode: str = "", preferred_market: str = "") -> dict[str, Any]:
         trace = []
         local_result = self._call_tool(trace, get_mandi_prices,
             {"commodity": commodity, "state": state, "district": district})
         comparison = self._call_tool(trace, compare_nearby_markets,
             {"commodity": commodity, "state": state, "top_n": 100})
-        # A district can contain more than one mandi. For this simple PoC, prefer
-        # the market whose name matches the district, such as Nashik mandi in Nashik.
-        local = next(
-            (
-                row
-                for row in local_result["markets"]
-                if row["market"].casefold() == district.strip().casefold()
-            ),
-            next(iter(local_result["markets"]), None),
-        )
+        local = None
+        if preferred_market:
+            local = next((row for row in local_result["markets"] if row["market"].casefold() == preferred_market.strip().casefold()), None)
+        if local is None:
+            # A district can contain more than one mandi. For this simple PoC, prefer
+            # the market whose name matches the district, such as Nashik mandi in Nashik.
+            local = next(
+                (
+                    row
+                    for row in local_result["markets"]
+                    if row["market"].casefold() == district.strip().casefold()
+                ),
+                next(iter(local_result["markets"]), None),
+            )
         ranked = comparison["markets"]
         alternate = next((row for row in ranked if not local or row["market"] != local["market"]), None)
         routing = {"distances_km": market_distances_km or {}, "source": "manual or compatibility input", "note": None}

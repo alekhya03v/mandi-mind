@@ -46,6 +46,22 @@ class AgmarknetClient:
                 and match(row["state"], state) and match(row["district"], district)
                 and match(row["market"], market)]
 
+    def states(self) -> list[str]:
+        rows = self._sample() if self.use_sample_data else self._sample()
+        return sorted({str(row["state"]).strip() for row in rows if str(row.get("state", "")).strip()})
+
+    def districts_for_state(self, state: str) -> list[str]:
+        rows = self._sample() if self.use_sample_data else self._sample()
+        return sorted({str(row["district"]).strip() for row in rows if row.get("state", "").casefold() == state.strip().casefold() and row.get("district")})
+
+    def commodities_for_state_and_district(self, state: str, district: str) -> list[str]:
+        rows = self._sample() if self.use_sample_data else self._sample()
+        return sorted({str(row["commodity"]).strip() for row in rows if row.get("state", "").casefold() == state.strip().casefold() and row.get("district", "").casefold() == district.strip().casefold() and row.get("commodity")})
+
+    def markets_for_state_district_commodity(self, state: str, district: str, commodity: str) -> list[str]:
+        rows = self._sample() if self.use_sample_data else self._sample()
+        return sorted({str(row["market"]).strip() for row in rows if row.get("state", "").casefold() == state.strip().casefold() and row.get("district", "").casefold() == district.strip().casefold() and row.get("commodity", "").casefold() == commodity.strip().casefold() and row.get("market")})
+
     def _live(self, commodity, state, district=None):
         if not self.api_key:
             raise RuntimeError("DATA_GOV_API_KEY is not configured.")

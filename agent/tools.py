@@ -1,7 +1,8 @@
-"""The three data tools available to the MandiMind agent."""
+"""The data and route-search tools available to the MandiMind agent."""
 import streamlit as st
 from langchain_core.tools import tool
 from data.agmarknet_client import AgmarknetClient, latest_by_market
+from data.routing import estimate_distance_between_places
 
 @st.cache_data(ttl=600)
 def _cached_fetch(commodity, state, district=None, market=None):
@@ -34,3 +35,8 @@ def get_price_trend(commodity: str, state: str, market: str, days: int = 7) -> d
     return {"commodity": commodity, "market": market, "days": len(rows),
             "history": [{"date": row["arrival_date"], "modal_price": row["modal_price"]} for row in rows],
             "direction": direction, "percent_change": change, "source": source, "note": note}
+
+@tool
+def search_distance_between_places(origin: str, destination: str) -> dict:
+    """Search the distance between two places and return a usable kilometer estimate, using routing when possible."""
+    return estimate_distance_between_places(origin, destination)

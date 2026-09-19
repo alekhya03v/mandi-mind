@@ -1,5 +1,5 @@
 from agent.agent import MandiMindAgent
-from agent.tools import compare_nearby_markets, get_price_trend
+from agent.tools import compare_nearby_markets, get_price_trend, search_distance_between_places
 from data.agmarknet_client import AgmarknetClient
 
 def test_sample_filtering(monkeypatch):
@@ -83,3 +83,11 @@ def test_agent_creates_tool_trace(monkeypatch):
     names = [item["tool"] for item in result["trace"]]
     assert "get_mandi_prices" in names and "compare_nearby_markets" in names
     assert result["best_market"]["market"] == "Lasalgaon" and result["estimated_extra_revenue"] > 0
+
+
+def test_search_distance_between_places_uses_haversine_fallback(monkeypatch):
+    monkeypatch.setattr("data.routing._geocode", lambda query: (78.0, 20.0) if "Nashik" in query else (78.5, 18.5))
+    monkeypatch.setattr("data.routing._road_distance_km", lambda origin, destination: None)
+    result = search_distance_between_places.invoke({"origin": "Nashik, Maharashtra", "destination": "Siddipet, Telangana"})
+    assert result["distance_km"] > 0
+    assert result["source"] in {"fallback_haversine", "estimated_distance"}

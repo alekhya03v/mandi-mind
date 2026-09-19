@@ -1,7 +1,7 @@
 """Best-effort road-distance lookup for farmer-to-market comparisons."""
 from __future__ import annotations
 
-import os
+import math
 from functools import lru_cache
 from typing import Any
 
@@ -34,6 +34,15 @@ def _geocode(query: str) -> tuple[float, float] | None:
         return None
 
 
+def _haversine_km(origin: tuple[float, float], destination: tuple[float, float]) -> float:
+    lon1, lat1 = map(math.radians, origin)
+    lon2, lat2 = map(math.radians, destination)
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+    return round(2 * 6371 * math.asin(math.sqrt(a)), 1)
+
+
 def _road_distance_km(origin: tuple[float, float], destination: tuple[float, float]) -> float | None:
     try:
         coordinates = f"{origin[0]},{origin[1]};{destination[0]},{destination[1]}"
@@ -50,6 +59,21 @@ def _road_distance_km(origin: tuple[float, float], destination: tuple[float, flo
         return None
 
 
+def estimate_distance_between_places(origin: str, destination: str) -> dict[str, Any]:
+    """Return the best available distance estimate between two places, using road routing when possible and haversine as a fallback."""
+    origin_coords = _geocode(origin)
+    destination_coords = _geocode(destination)
+    if origin_coords is None or destination_coords is None:
+        return {"distance_km": 0.0, "source": "unavailable", "note": "Could not geocode both places, so no distance could be estimated."}
+
+    road_distance = _road_distance_km(origin_coords, destination_coords)
+    if road_distance is not None:
+        return {"distance_km": road_distance, "source": "osrm", "note": None}
+
+    fallback_distance = _haversine_km(origin_coords, destination_coords)
+    return {"distance_km": fallback_distance, "source": "fallback_haversine", "note": "Road routing failed; used a geographic fallback estimate."}
+
+
 def estimate_market_distances(
     place: str,
     district: str,
@@ -64,15 +88,26 @@ def estimate_market_distances(
         return {"distances_km": {}, "source": "unavailable", "note": "Could not locate the farmer's place and PIN code, so transport costs need location data."}
 
     distances: dict[str, float] = {}
+    fallback_used = False
     for market in markets:
         destination_query = ", ".join(
             part for part in (market.get("market"), market.get("district"), state, "India") if part
         )
         destination = _geocode(destination_query)
-        if destination is not None:
-            distance = _road_distance_km(origin, destination)
-            if distance is not None:
-                distances[market["market"]] = distance
+        if destination is None:
+            continue
+        distance = _road_distance_km(origin, destination)
+        if distance is None:
+            distance = _haversine_km(origin, destination)
+            fallback_used = True
+        distances[market["market"]] = distance
 
-    note = None if len(distances) == len(markets) else "Some market locations could not be routed; those markets are shown without an automatic transport estimate."
-    return {"distances_km": distances, "source": "OpenStreetMap and OSRM", "note": note}
+    if not distances:
+        return {"distances_km": {}, "source": "unavailable", "note": "No market-to-place distance could be computed with the available routing data."}
+
+    note = None
+    if fallback_used:
+        note = "Some markets were routed with a geographic fallback because road routing was unavailable."
+    elif len(distances) != len(markets):
+        note = "Some market locations could not be routed; those markets are shown without an automatic transport estimate."
+    return {"distances_km": distances, "source": "OpenStreetMap, OSRM, and haversine fallback" if fallback_used else "OpenStreetMap and OSRM", "note": note}

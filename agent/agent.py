@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 from langchain_core.messages import HumanMessage, SystemMessage
 from agent.llm import get_llm
-from agent.tools import compare_nearby_markets, get_mandi_prices, get_price_trend
+from agent.tools import compare_nearby_markets, get_mandi_prices, get_price_trend, search_market_distances
 from data.routing import estimate_market_distances
 
 THRESHOLD_PERCENT = 5.0
@@ -74,7 +74,13 @@ class MandiMindAgent:
         ranked = comparison["markets"]
         alternate = next((row for row in ranked if not local or row["market"] != local["market"]), None)
         routing = {"distances_km": market_distances_km or {}, "source": "manual or compatibility input", "note": None}
-        if place or pincode:
+        if market_distances_km is None and not (place or pincode):
+            routing = self._call_tool(trace, search_market_distances, {
+                "origin": district,
+                "state": state,
+                "markets": ranked,
+            })
+        elif place or pincode:
             routing = estimate_market_distances(place, district, state, pincode, ranked)
         market_distances_km = routing["distances_km"]
         effective_transport_rate = max(0.0, transport_cost_per_km or DEFAULT_TRANSPORT_COST_PER_KM)

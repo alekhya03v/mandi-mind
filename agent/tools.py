@@ -2,7 +2,7 @@
 import streamlit as st
 from langchain_core.tools import tool
 from data.agmarknet_client import AgmarknetClient, latest_by_market
-from data.routing import estimate_distance_between_places
+from data.routing import estimate_distance_between_places, estimate_market_distances
 
 @st.cache_data(ttl=600)
 def _cached_fetch(commodity, state, district=None, market=None):
@@ -40,3 +40,9 @@ def get_price_trend(commodity: str, state: str, market: str, days: int = 7) -> d
 def search_distance_between_places(origin: str, destination: str) -> dict:
     """Search the distance between two places and return a usable kilometer estimate, using routing when possible."""
     return estimate_distance_between_places(origin, destination)
+
+
+@tool
+def search_market_distances(origin: str, state: str, markets: list[dict]) -> dict:
+    """Search road distances from a district or place to comparison markets."""
+    return estimate_market_distances(origin, "", state, "", markets)
